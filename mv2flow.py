@@ -100,7 +100,7 @@ def read_flo_file(filename, memcached=False):
 
 # ================ save visualized flow ================
 
-def save_flo_to_visual(input_filename, output_filename):
+def save_flo_to_visual(input_filename, frame, output_filename):
     # mkdir if not exist
     filepath = os.path.dirname(output_filename)
     if not os.path.exists(filepath):
@@ -108,7 +108,13 @@ def save_flo_to_visual(input_filename, output_filename):
 
     files = glob.glob(input_filename)
     img = fz.convert_from_file(files[0])
+    
+    plt.subplot(1, 2, 1)
     plt.imshow(img)
+
+    plt.subplot(1, 2, 2)
+    # convert img read by OpenCV to RGB
+    plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
     # change to tight layout
     plt.tight_layout()
@@ -118,14 +124,6 @@ def save_flo_to_visual(input_filename, output_filename):
 
 # ========== MAIN ==========
 
-# FILEPATH = "data-extra/alley_1/out-2023-03-10T14:52:02/motion_vectors/"
-FRAMEPATH = "data-extra/alley_1/out-2023-03-10T14:52:02/frames/"
-
-# get height and width of frame
-frame_0 = cv2.imread(FRAMEPATH + "frame-0.jpg")
-print(np.shape(frame_0))
-(h, w, _) = np.shape(frame_0)
-
 INPUT_BASE = "data-extra/"
 OUTPUT_BASE = "data-output/"
 GT_BASE = "data-gtflow/"
@@ -134,12 +132,15 @@ for FILE in os.listdir(INPUT_BASE):
     # if (FILE != "alley_1"):
     #     continue
     PATH1 = INPUT_BASE + FILE + "/"
+
     for random_name in os.listdir(PATH1):
         PATH2 = PATH1 + random_name + "/"
         print(PATH2)
 
+        FRAMEPATH = PATH2 + "/frames/"
         MVPATH = PATH2 + "motion_vectors/"
         TYPES = PATH2 + "frame_types.txt"
+
 
         with open(TYPES, "r") as f:
             # read lines until the end of the file
@@ -153,6 +154,12 @@ for FILE in os.listdir(INPUT_BASE):
 
                 #process the P frame, convert to flow
                 if frame_type == "P":
+                    # read the frame
+                    frame_file = FRAMEPATH + "frame-" + str(frame_counter) + ".jpg"
+                    # get height and width of frame
+                    frame_img = cv2.imread(frame_file)
+                    (h, w, _) = np.shape(frame_img)
+
                     # read the motion vectors
                     mv_file = MVPATH + "mvs-" + str(frame_counter) + ".npy"
                     mvs = np.load(mv_file)
@@ -184,9 +191,10 @@ for FILE in os.listdir(INPUT_BASE):
                     
                     #save the visualized flow
                     save_flo_to_visual(OUTPUT_BASE + FILE + "/combined-flo/" + 
-                                "/combined-" + str(frame_counter) + ".flo",
-                                OUTPUT_BASE + FILE + "/vis-flo/" + 
-                                "/vis-" + str(frame_counter) + ".png"
+                                                "/combined-" + str(frame_counter) + ".flo",
+                                        frame_img, 
+                                        OUTPUT_BASE + FILE + "/vis-flo/" + 
+                                                "/vis-" + str(frame_counter) + ".png"
                                 )
 
                 frame_counter = frame_counter + 1
