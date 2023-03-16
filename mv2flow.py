@@ -110,7 +110,10 @@ def save_flo_to_visual(input_filename, output_filename):
     img = fz.convert_from_file(files[0])
     plt.imshow(img)
 
-    plt.savefig(output_filename)
+    # change to tight layout
+    plt.tight_layout()
+    # save high resolution image 
+    plt.savefig(output_filename, dpi=300)
 
 
 # ========== MAIN ==========
@@ -128,6 +131,8 @@ OUTPUT_BASE = "data-output/"
 GT_BASE = "data-gtflow/"
 
 for FILE in os.listdir(INPUT_BASE):
+    # if (FILE != "alley_1"):
+    #     continue
     PATH1 = INPUT_BASE + FILE + "/"
     for random_name in os.listdir(PATH1):
         PATH2 = PATH1 + random_name + "/"
@@ -159,8 +164,8 @@ for FILE in os.listdir(INPUT_BASE):
                     vis_mat = vis_flow(flow)
 
                     #save the flow matrix
-                    save_to_flo(vis_mat, OUTPUT_BASE + "mv-flo/" + 
-                                    FILE + "/flow-" + str(frame_counter) + ".flo")
+                    save_to_flo(vis_mat, OUTPUT_BASE + FILE + "/mv-flo/" + 
+                                    "flow-" + str(frame_counter) + ".flo")
 
                     # convert int to 4-number string using formatted string
                     print("Current frame #: ", frame_counter)
@@ -171,23 +176,20 @@ for FILE in os.listdir(INPUT_BASE):
                     gt_flow = read_flo_file(GT_BASE + FILE + "/frame_" + frame_counter_str + ".flo")
 
                     #combine ground truth flow and predicted flow
-                    combined_flow = np.concatenate((gt_flow, vis_mat), axis=1)
+                    combined_flow = np.concatenate((gt_flow, vis_mat), axis=0)
 
                     #save the combined flow
-                    save_to_flo(combined_flow, OUTPUT_BASE + "combined-flo/" + 
-                                FILE + "/combined-" + str(frame_counter) + ".flo")
+                    save_to_flo(combined_flow, OUTPUT_BASE + FILE + "/combined-flo" + 
+                                "/combined-" + str(frame_counter) + ".flo")
                     
                     #save the visualized flow
-                    save_flo_to_visual(OUTPUT_BASE + "combined-flo/" + 
-                                FILE + "/combined-" + str(frame_counter) + ".flo",
-                                OUTPUT_BASE + "vis-flo/" + 
-                                FILE + "/vis-" + str(frame_counter) + ".png"
+                    save_flo_to_visual(OUTPUT_BASE + FILE + "/combined-flo/" + 
+                                "/combined-" + str(frame_counter) + ".flo",
+                                OUTPUT_BASE + FILE + "/vis-flo/" + 
+                                "/vis-" + str(frame_counter) + ".png"
                                 )
 
                 frame_counter = frame_counter + 1
-        quit()
-                    
-
 
 quit()
 
