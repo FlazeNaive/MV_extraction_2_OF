@@ -19,6 +19,7 @@ def get_flow_from_mv(mvs_0):
 
 def vis_flow(flow):
     vis_mat = np.zeros((h, w, 2))
+    mask = np.zeros((h, w))
 
     num_vec = np.shape(flow)[0]
     for mv in np.split(flow, num_vec):
@@ -30,11 +31,13 @@ def vis_flow(flow):
         for i in range(16):
             for j in range(16):
                 try:
-                    cur = (end_pt[1] + i - 8, end_pt[0] + j - 8) # pixel currently on
+                    # cur = (end_pt[1] + i - 8, end_pt[0] + j - 8) # pixel currently on
+                    cur = (start_pt[1] + i - 8, start_pt[0] + j - 8) # pixel currently on
                     vis_mat[cur[0]][cur[1]] = (mv[0][2], mv[0][3])
+                    mask[cur[0]][cur[1]] = 255
                 except:
                     continue
-    return vis_mat
+    return vis_mat, mask
 
 
 # ================ draw vectors ================
@@ -100,7 +103,7 @@ def read_flo_file(filename, memcached=False):
 
 # ================ save visualized flow ================
 
-def save_flo_to_visual(input_filename, frame, output_filename):
+def save_flo_to_visual(input_filename, frame, output_filename, mask = None, method = "no_mask"):
     # mkdir if not exist
     filepath = os.path.dirname(output_filename)
     if not os.path.exists(filepath):
@@ -109,10 +112,19 @@ def save_flo_to_visual(input_filename, frame, output_filename):
     files = glob.glob(input_filename)
     img = fz.convert_from_file(files[0])
     
-    plt.subplot(1, 2, 1)
-    plt.imshow(img)
+    if method == "no_mask": 
+        plt.subplot(1, 2, 1)
+        plt.imshow(img)
 
-    plt.subplot(1, 2, 2)
+        plt.subplot(1, 2, 2)
+    else: 
+        plt.subplot(1, 3, 1)
+        plt.imshow(img)
+
+        plt.subplot(1, 3, 2)
+        plt.imshow(mask)
+
+        plt.subplot(1, 3, 3)
     # convert img read by OpenCV to RGB
     plt.imshow(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
@@ -168,7 +180,7 @@ for FILE in os.listdir(INPUT_BASE):
                     flow = get_flow_from_mv(mvs)
 
                     # draw the flow matrix
-                    vis_mat = vis_flow(flow)
+                    vis_mat, mask_mat = vis_flow(flow)
 
                     #save the flow matrix
                     save_to_flo(vis_mat, OUTPUT_BASE + FILE + "/mv-flo/" + 
@@ -194,8 +206,18 @@ for FILE in os.listdir(INPUT_BASE):
                                                 "/combined-" + str(frame_counter) + ".flo",
                                         frame_img, 
                                         OUTPUT_BASE + FILE + "/vis-flo/" + 
-                                                "/vis-" + str(frame_counter) + ".png"
+                                                "/vis-" + str(frame_counter) + ".png",
+                                        mask_mat,
+                                        "no_mask"
                                 )
+                    
+                    #save the mask
+                    PATH_MASK = OUTPUT_BASE + FILE + "/mask/"
+                    if not os.path.exists(PATH_MASK):
+                        os.makedirs(PATH_MASK)
+                    cv2.imwrite(PATH_MASK + 
+                                    "mask-" + str(frame_counter) + ".png"
+                                    , mask_mat)
 
                 frame_counter = frame_counter + 1
 
