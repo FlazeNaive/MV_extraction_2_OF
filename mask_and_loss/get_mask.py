@@ -91,7 +91,7 @@ def draw_vector(mvs, draw_img):
     # cv2.imshow("draw_img", draw_img)
     # cv2.waitKey(0)
 
-img = cv2.imread("frame-" + ID + ".jpg")
+img = cv2.imread("test_input/frame-" + ID + ".jpg")
 print("imgshape: ",img.shape)
 # cv2.imshow("img", img)
 # cv2.waitKey(0)
@@ -101,12 +101,12 @@ mask_shape = np.shape(img)[0:2]
 
 print(mask_shape)
 
-mvs = np.load("mvs-"+ID+".npy")
+mvs = np.load("test_input/mvs-"+ID+".npy")
 flow = get_flow_from_mv(mvs)
 mask = get_mask_2(mask_shape, mvs)
 print(np.shape(mask))
 scaled = (mask - np.min(mask)) / (np.max(mask) - np.min(mask))
-cv2.imwrite("mask.png", scaled * 255)
+cv2.imwrite("test_output/mask.png", scaled * 255)
 # cv2.imshow("mask", mask)
 # cv2.waitKey(0)
 
@@ -126,9 +126,9 @@ def calc_loss(input, mask):
     return loss
     
 
-gt = read_flo_file("frame_0006.flo")
-res = read_flo_file("flow-6.flo")
-raft = np.load("raft.npy")[2:438, :, :]
+gt = read_flo_file("test_input/frame_0006.flo")
+res = read_flo_file("test_input/flow-6.flo")
+raft = np.load("test_input/raft.npy")[2:438, :, :]
 
 print("gt shape: ", gt.shape)
 print("res shape: ", res.shape)
