@@ -105,6 +105,8 @@ def calc_frame(scene, fr_num):
     return (out_loss, raft_loss)
 
 # print(calc_frame("alley_1", 2))
+print(calc_frame("bamboo_1", 5))
+quit()
 
 def calc_scene(scene):
     PATH1 = "../data-extra/" + scene + "/"
