@@ -29,11 +29,22 @@ def read_flo_file(filename):
     return data2d
 
 def vis(a, name="default"):
+    print("NAME ", name)
     img = fz.convert_from_flow(a)
-    OUTPATH = "tmp_visual/"
-    if not os.path.exists(OUTPATH):
-        os.makedirs(OUTPATH)
-    cv2.imwrite(OUTPATH + str(name) + ".png", img)
+    dict_order = ["out", "gt", "raft"]
+    for (i, dic) in enumerate(dict_order):
+        shape = np.shape(img)
+        print(shape)
+        h = int(shape[0]/3)
+        print(h)
+        cur = img[i*h: (i+1)*h, :, :]
+
+        OUTPATH = "tmp_visual/"
+        if not os.path.exists(OUTPATH):
+            os.makedirs(OUTPATH)
+        FILENAME = dict_order[i] + "-" + name
+        print(FILENAME)
+        cv2.imwrite(OUTPATH + FILENAME, cur)
 
 def paint(scene, fr_num):
     # print("Loading OUTPUT...")
@@ -47,11 +58,16 @@ def paint(scene, fr_num):
     raft = np.load(RAFT_PATH)[2:-2, :, :]
 
     size = np.shape(gt)
-    size = (size[1], size[0])
+    size = (size[1], size[0]*3)
+    # print(size)
 
     for scale in {1.0, 0.25, 1.0/16}:
-        vis(cv2.resize(zoom(out,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "out-{}.png".format(scale))
-        vis(cv2.resize(zoom(gt,   (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "gt-{}.png".format(scale))
-        vis(cv2.resize(zoom(raft, (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "raft-{}.png".format(scale))
+        tmp = np.concatenate((out, gt, raft), 0)
+        print(np.shape(tmp))
+        vis(tmp, scale)
+        # vis(cv2.resize(zoom(tmp,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "{}.png".format(scale))
+        # vis(cv2.resize(zoom(out,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "out-{}.png".format(scale))
+        # vis(cv2.resize(zoom(gt,   (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "gt-{}.png".format(scale))
+        # vis(cv2.resize(zoom(raft, (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "raft-{}.png".format(scale))
 
 paint("shaman_2", 11)
