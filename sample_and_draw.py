@@ -46,9 +46,12 @@ def paint(scene, fr_num):
     RAFT_PATH = "../RAFT/raft-out/" + scene + "/" + str(fr_num-1) + ".npy"
     raft = np.load(RAFT_PATH)[2:-2, :, :]
 
-    for scale in {1.0, 0.25, 1.0/16}:
-        vis(zoom(out, (scale, scale, 1)), "out-{}.png".format(scale))
-        vis(zoom(gt, (scale, scale, 1)), "gt-{}.png".format(scale))
-        vis(zoom(raft, (scale, scale, 1)), "raft-{}.png".format(scale))
+    size = np.shape(gt)
+    size = (size[1], size[0])
 
-paint("bamboo_1", 5)
+    for scale in {1.0, 0.25, 1.0/16}:
+        vis(cv2.resize(zoom(out,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "out-{}.png".format(scale))
+        vis(cv2.resize(zoom(gt,   (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "gt-{}.png".format(scale))
+        vis(cv2.resize(zoom(raft, (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "raft-{}.png".format(scale))
+
+paint("shaman_2", 11)
