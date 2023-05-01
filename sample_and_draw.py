@@ -28,6 +28,27 @@ def read_flo_file(filename):
     f.close()
     return data2d
 
+def vis2(a, scale):
+    img = fz.convert_from_flow(a)
+    dict_order = ["out", "gt", "raft"]
+    OUTPATH = "tmp_visual/"
+    imgs = []
+    for (i, dic) in enumerate(dict_order):
+        shape = np.shape(img)
+        print(shape)
+        h = int(shape[0]/3)
+        print(h)
+        cur = img[i*h: (i+1)*h, :, :]
+        imgs.append(cur)
+
+    size = np.shape(imgs[0])
+    for (i, (name, img)) in enumerate(zip(dict_order, imgs)):
+        resized = zoom(img, (scale, scale, 1))
+        resized = cv2.resize(resized, (size[1], size[0]), interpolation=cv2.INTER_NEAREST)
+        cv2.imwrite(OUTPATH + name + "-{}.png".format(scale), resized)
+
+    
+
 def vis(a, name="default"):
     print("NAME ", name)
     img = fz.convert_from_flow(a)
@@ -64,7 +85,7 @@ def paint(scene, fr_num):
     for scale in {1.0, 0.25, 1.0/16}:
         tmp = np.concatenate((out, gt, raft), 0)
         print(np.shape(tmp))
-        vis(tmp, scale)
+        vis2(tmp, scale)
         # vis(cv2.resize(zoom(tmp,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "{}.png".format(scale))
         # vis(cv2.resize(zoom(out,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "out-{}.png".format(scale))
         # vis(cv2.resize(zoom(gt,   (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "gt-{}.png".format(scale))
