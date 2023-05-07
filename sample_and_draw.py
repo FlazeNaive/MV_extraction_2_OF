@@ -28,10 +28,24 @@ def read_flo_file(filename):
     f.close()
     return data2d
 
-def vis2(a, scale):
+def get_hist(a):
+    plt.hist(a.ravel())
+    plt.savefig('histo.png')
+    # plt.show()
+
+def vis2(a, scale, is_clip = True):
+    get_hist(a)
+    if is_clip:
+        OUTPATH = "tmp_visual_cliped/"
+        a = np.clip(a, -3, 2.5)
+    else:
+        OUTPATH = "tmp_visual/"
+        
+    if not os.path.exists(OUTPATH):
+        os.makedirs(OUTPATH)
+
     img = fz.convert_from_flow(a)
     dict_order = ["out", "gt", "raft"]
-    OUTPATH = "tmp_visual/"
     imgs = []
     for (i, dic) in enumerate(dict_order):
         shape = np.shape(img)
@@ -67,7 +81,7 @@ def vis(a, name="default"):
         print(FILENAME)
         cv2.imwrite(OUTPATH + FILENAME, cur)
 
-def paint(scene, fr_num):
+def paint(scene, fr_num, is_clip=True):
     # print("Loading OUTPUT...")
     OUT_PATH = "data-output/" + scene + "/mv-flo/flow-" + str(fr_num) + ".flo"
     out = read_flo_file(OUT_PATH)
@@ -85,10 +99,10 @@ def paint(scene, fr_num):
     for scale in {1.0, 0.25, 1.0/16}:
         tmp = np.concatenate((out, gt, raft), 0)
         print(np.shape(tmp))
-        vis2(tmp, scale)
+        vis2(tmp, scale, is_clip)
         # vis(cv2.resize(zoom(tmp,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "{}.png".format(scale))
         # vis(cv2.resize(zoom(out,  (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "out-{}.png".format(scale))
         # vis(cv2.resize(zoom(gt,   (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "gt-{}.png".format(scale))
         # vis(cv2.resize(zoom(raft, (scale, scale, 1)), size, interpolation=cv2.INTER_NEAREST), "raft-{}.png".format(scale))
 
-paint("shaman_2", 11)
+paint("shaman_2", 11, True)
