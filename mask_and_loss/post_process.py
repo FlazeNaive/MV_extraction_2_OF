@@ -19,4 +19,5 @@ for ele in dict:
         RAFT += np.array(data['RAFT'])
         # print(MV, RAFT)
 
+# calculate average for all scenes
 print(MV/length, RAFT/length)
