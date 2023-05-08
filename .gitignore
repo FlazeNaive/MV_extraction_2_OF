@@ -6,3 +6,5 @@ data-gtflow/
 mv_extractor/
 mask_and_loss/test_input/
 mask_and_loss/test_output/
+mask_and_loss/tmp_visual/
+loss/
