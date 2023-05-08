@@ -3,6 +3,7 @@ import cv2
 import os
 import json
 from scipy.ndimage import zoom
+from skimage.transform import resize, rescale
 
 import flowiz
 
@@ -49,19 +50,32 @@ def vis(a, b, name="default"):
     
 
 def calc_loss(out, gt, mask, scale = 1.0, name="default"):
+    # import ipdb; ipdb.set_trace()
     out = zoom(out, (scale, scale, 1))
     gt = zoom(gt, (scale, scale, 1))
     mask = zoom(mask, scale)
+
+    # h, w, _ = out.shape
+    # print(h, w, _)
+    # out = rescale(out, scale)
+    # gt = rescale(gt, scale)
+    # mask= rescale(mask, scale)
+
+    # # out = resize(out, (h * scale, w * scale, 2))
+    # # gt = resize(gt, (h * scale, w * scale, 2))
+    # # mask = resize(mask, (h*scale, w*scale))
+    # print(out.shape)
+    # print(mask)
     mask = np.where(mask > 127, 1, 0)
 
     # vis(out, gt, name+str(scale))
     
     gt = np.multiply(gt, np.stack((mask, mask), axis=2))
     out= np.multiply(out, np.stack((mask, mask), axis=2))
-
-    sum_up = np.sqrt(np.sum((out - gt)**2))
+    # import ipdb; ipdb.set_trace()
+    sum_up = np.sqrt(np.sum((out - gt)**2, axis=-1)).sum()
     cnt_pix = np.sum(mask)
-    # print(sum_up, cnt_pix, sum_up / cnt_pix)
+    print(sum_up, cnt_pix, sum_up / cnt_pix)
     return (sum_up/cnt_pix)
 
 
@@ -84,7 +98,7 @@ def calc_frame(scene, fr_num):
     # out_loss = [2, 3, 3]
     # raft_loss = [2, 3, 3]
 
-    for scale in (1.0, 0.5, 0.25):
+    for scale in (1.0, 0.25, 1.0/16):
         out_loss.append(calc_loss(out, gt, mask, scale, scene+"-"+str(fr_num)+"-out"))
         raft_loss.append(calc_loss(raft, gt, mask, scale, scene+"-"+str(fr_num)+"-raft"))
 
@@ -119,8 +133,8 @@ def calc_scene(scene):
                 if frame_type == "P":
                     print("frame # = ", frame_counter)
                     (a, b) = calc_frame(scene, frame_counter)
-                    print(a)
-                    print(b)
+                    # print(a)
+                    # print(b)
                     rec.append((a, b))
                     sum_loss_out += a
                     sum_loss_raft += b
